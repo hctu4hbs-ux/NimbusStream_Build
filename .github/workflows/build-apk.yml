@@ -19,12 +19,12 @@ jobs:
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --stacktrace -Dorg.gradle.instrumentation.agent=false
       - name: Build Release APK (Unsigned)
-        run: ./gradlew assembleRelease --stacktrace
+        run: ./gradlew assembleRelease --stacktrace -Dorg.gradle.instrumentation.agent=false
         continue-on-error: true
       - name: Build Release AAB (Unsigned)
-        run: ./gradlew bundleRelease --stacktrace
+        run: ./gradlew bundleRelease --stacktrace -Dorg.gradle.instrumentation.agent=false
         continue-on-error: true
       - name: Prepare Artifacts
         run: |
