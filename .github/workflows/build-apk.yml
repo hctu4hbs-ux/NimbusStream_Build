@@ -1,0 +1,46 @@
+name: Android Build Automation
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+jobs:
+  build:
+    name: Build APK and AAB
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+      - name: Build Release APK (Unsigned)
+        run: ./gradlew assembleRelease --stacktrace
+        continue-on-error: true
+      - name: Build Release AAB (Unsigned)
+        run: ./gradlew bundleRelease --stacktrace
+        continue-on-error: true
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p artifacts
+          find app/build/outputs/apk/debug -name "*.apk" -exec cp {} artifacts/app-debug.apk ;
+          find app/build/outputs/apk/release -name "*.apk" -exec cp {} artifacts/app-release-unsigned.apk ; || true
+          find app/build/outputs/bundle/release -name "*.aab" -exec cp {} artifacts/app-release-unsigned.aab ; || true
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nimbus-stream-apks
+          path: artifacts/*.apk
+          retention-days: 7
+      - name: Upload AAB Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nimbus-stream-aab
+          path: artifacts/*.aab
+          retention-days: 7
